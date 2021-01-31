@@ -2,6 +2,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -170,8 +172,10 @@ public class Validators {
             for(int i = 0; i < array.size(); i++){
                 JSONObject usersOuter = (JSONObject)array.get(i);
                 JSONObject userInner = (JSONObject)usersOuter.get("Users");
+                System.out.println(password);
+                boolean validHash = validateHash(password, userInner.get("Password").toString());
                 if(userInner.get("Username").toString().equalsIgnoreCase(username) &&
-                userInner.get("Password").toString().equals(password)){
+                validHash){
                     validCredentials = true;
                 }
             }
@@ -180,5 +184,31 @@ public class Validators {
             e.printStackTrace();
         }
         return validCredentials;
+    }
+
+    private boolean validateHash(String password, String hash){
+        boolean valid = false;
+        MessageDigest md;
+        System.out.println("Password to hash:" + password);
+        try {
+            md = MessageDigest.getInstance("SHA-512");
+            md.update(password.getBytes());
+            byte[] digest = md.digest();
+            StringBuffer sb = new StringBuffer();
+            for(byte b : digest){
+                sb.append(String.format("%02x", b & 0xff));
+            }
+            System.out.println("Hash tested: " + sb.toString());
+            System.out.println("current hash: " + hash);
+            if(hash.equals(sb.toString())){
+                valid = true;
+            }
+            
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        
+        return valid;
     }
 }
