@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -39,6 +41,27 @@ public class User {
 
     public String getUsername() {
         return this.username;
+    }
+    public String getPass(){return this.password;}
+
+    public void hashPass(String pass) {
+        MessageDigest md;
+        try {
+            md = MessageDigest.getInstance("SHA-512");
+            md.update(pass.getBytes());
+            byte[] digest = md.digest();
+            StringBuffer sb = new StringBuffer();
+            for(byte b : digest){
+                sb.append(String.format("%02x", b & 0xff));
+            }
+
+            this.password = sb.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        
+
     }
 
     private int setID(String filename) {

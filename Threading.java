@@ -110,6 +110,7 @@ class LoginGUI implements ActionListener, FocusListener {
                 if (validateForm()) {
                     user = new User(tUser.getText(), tPass.getText(), tEmail.getText(),
                             tDateDay.getText() + "-" + tDateMonth.getText() + "-" + tDateYear.getText(), "Users.json");
+                    user.hashPass(user.getPass());
                     user.submit("Users.json");
                     showSuccess(1);
                 }
