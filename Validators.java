@@ -171,8 +171,8 @@ public class Validators {
             for(int i = 0; i < array.size(); i++){
                 JSONObject usersOuter = (JSONObject)array.get(i);
                 JSONObject userInner = (JSONObject)usersOuter.get("Users");
-                System.out.println(password);
                 boolean validHash = validateHash(password, userInner.get("Password").toString(), userInner.get("Salt Key").toString());
+                System.out.println(validHash);
                 if(userInner.get("Username").toString().equalsIgnoreCase(username) &&
                 validHash){
                     validCredentials = true;
