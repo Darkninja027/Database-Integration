@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Random;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -19,13 +20,23 @@ public class User {
     private String password;
     private String email;
     private String dateOfBirth;
+    private String salt;
 
+    /**
+     * The constructor for the user class for the object that is stored inside the json file 
+     * @param user The username of the user
+     * @param pass The password (in clear text) for the user - the password is encrypted later 
+     * @param em The email address for the user
+     * @param dob
+     * @param filename
+    */
     public User(String user, String pass, String em, String dob, String filename) {
         this.username = user;
         this.password = pass;
         this.email = em;
         this.dateOfBirth = dob;
         this.userID = setID(filename);
+        this.salt = generateSalt();
     }
 
     public JSONObject createJson() {
@@ -35,6 +46,7 @@ public class User {
         obj.put("Password", password);
         obj.put("Email", email);
         obj.put("Date of Birth", dateOfBirth);
+        obj.put("Salt Key", salt);
         return obj;
 
     }
@@ -46,9 +58,10 @@ public class User {
 
     public void hashPass(String pass) {
         MessageDigest md;
+        String passToHash = pass+salt;
         try {
             md = MessageDigest.getInstance("SHA-512");
-            md.update(pass.getBytes());
+            md.update(passToHash.getBytes());
             byte[] digest = md.digest();
             StringBuffer sb = new StringBuffer();
             for(byte b : digest){
@@ -75,7 +88,6 @@ public class User {
                 JSONParser parser = new JSONParser();
                 Object obj = parser.parse(fr);
                 JSONArray array = (JSONArray)obj;
-                System.out.println(array.size());
                 id += array.size();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -98,7 +110,6 @@ public class User {
         File file = new File(filename);
         if(file.length()==0){
             try(FileWriter fw = new FileWriter(filename)) {
-                System.out.println("USERS: File empty");
                 array.add(u);
                 fw.write(array.toJSONString());
                 fw.flush();
@@ -107,7 +118,6 @@ public class User {
             }
         }
         else{
-            System.out.println("File was not empty");
             try(FileReader fr = new FileReader(filename)){
                 JSONParser parser = new JSONParser();
                 Object object = parser.parse(fr);
@@ -124,5 +134,16 @@ public class User {
             catch(IOException e){e.printStackTrace();}
             catch(org.json.simple.parser.ParseException e){e.printStackTrace();}
         }
+    }
+
+    private String generateSalt(){
+        String charsToUse = "ABCDEFGHIJKLMONPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz";
+        int size = 16;
+        StringBuilder builder = new StringBuilder();
+        Random random = new Random();
+        for(int i =0; i < size; i++){
+            builder.append(charsToUse.charAt(random.nextInt(charsToUse.length())));
+        }
+        return builder.toString();
     }
 }

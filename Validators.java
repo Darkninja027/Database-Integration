@@ -159,7 +159,6 @@ public class Validators {
         if (!match.matches()) {
             validEmail = false;
         }
-        System.out.println("200: Valid Email: " + validEmail);
         return validEmail;
     }
 
@@ -173,7 +172,7 @@ public class Validators {
                 JSONObject usersOuter = (JSONObject)array.get(i);
                 JSONObject userInner = (JSONObject)usersOuter.get("Users");
                 System.out.println(password);
-                boolean validHash = validateHash(password, userInner.get("Password").toString());
+                boolean validHash = validateHash(password, userInner.get("Password").toString(), userInner.get("Salt Key").toString());
                 if(userInner.get("Username").toString().equalsIgnoreCase(username) &&
                 validHash){
                     validCredentials = true;
@@ -186,20 +185,18 @@ public class Validators {
         return validCredentials;
     }
 
-    private boolean validateHash(String password, String hash){
+    private boolean validateHash(String password, String hash, String salt){
         boolean valid = false;
         MessageDigest md;
-        System.out.println("Password to hash:" + password);
+        String pass = password + salt;
         try {
             md = MessageDigest.getInstance("SHA-512");
-            md.update(password.getBytes());
+            md.update(pass.getBytes());
             byte[] digest = md.digest();
             StringBuffer sb = new StringBuffer();
             for(byte b : digest){
                 sb.append(String.format("%02x", b & 0xff));
             }
-            System.out.println("Hash tested: " + sb.toString());
-            System.out.println("current hash: " + hash);
             if(hash.equals(sb.toString())){
                 valid = true;
             }
